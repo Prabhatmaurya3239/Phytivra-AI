@@ -6,6 +6,7 @@ import 'screens/result_screen.dart';
 import 'screens/ai_recommendation_screen.dart';
 import 'screens/language_selection_screen.dart';
 import 'screens/settings_screen.dart';
+import 'core/app_theme.dart';
 
 void main() {
   runApp(const CropDiseaseApp());
@@ -19,10 +20,7 @@ class CropDiseaseApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Crop Disease Detector',
-      theme: ThemeData(
-        primarySwatch: Colors.green, // Keeping it farmer-friendly
-        scaffoldBackgroundColor: Colors.white,
-      ),
+      theme: AppTheme.lightTheme,// Using our centralised theme
       initialRoute: '/home', // Starting at home for testing purposes
       // Basic Navigation implemented for all required screens[cite: 1]
       routes: {
