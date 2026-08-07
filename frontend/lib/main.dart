@@ -1,3 +1,4 @@
+import 'package:crop_app/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart'; // Make sure this matches the file you created earlier!
 import 'screens/upload_screen.dart';
@@ -24,7 +25,7 @@ class CropDiseaseApp extends StatelessWidget {
       initialRoute: '/home', // Starting at home for testing purposes
       // Basic Navigation implemented for all required screens[cite: 1]
       routes: {
-        '/splash': (context) => const DummyScreen(title: '1. Splash Screen'),
+        '/splash': (context) => const SplashScreen(/*title: '1. Splash Screen'*/),
         '/language': (context) => const LanguageSelectionScreen(/*title: '2. Language Selection'*/),
         '/home': (context) => const HomeScreen(), // The screen we built in Phase 2!
         '/upload': (context) => const UploadScreen(/*title: '4. Upload Image'*/),
