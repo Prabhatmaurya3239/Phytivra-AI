@@ -1,5 +1,7 @@
 import 'package:crop_app/widgets/language_toggel.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/app_state_provider.dart';
 
 
 class AiRecommendationScreen extends StatefulWidget {
@@ -10,7 +12,7 @@ class AiRecommendationScreen extends StatefulWidget {
 }
 
 class _AiRecommendationScreenState extends State<AiRecommendationScreen> {
-  bool _isEnglish = true; // State for the language toggle[cite: 2]
+  //bool _isEnglish = true; // State for the language toggle[cite: 2]
 
   @override
   Widget build(BuildContext context) {
@@ -18,12 +20,18 @@ class _AiRecommendationScreenState extends State<AiRecommendationScreen> {
       appBar: AppBar(
         title: const Text('Recommendations'),
         actions: [
-          // Language Switch embedded in AppBar[cite: 2]
-          Padding(
+         Padding(
             padding: const EdgeInsets.only(right: 16.0),
-            child: LanguageToggleWidget(
-              isEnglish: _isEnglish,
-              onToggle: (val) => setState(() => _isEnglish = val),
+            // Consumer listens to AppStateProvider and rebuilds when it changes
+            child: Consumer<AppStateProvider>(
+              builder: (context, appState, child) {
+                return LanguageToggleWidget(
+                  isEnglish: appState.isEnglish,
+                  onToggle: (val) {
+                    appState.toggleLanguage(val); // Updates the global brain!
+                  },
+                );
+              },
             ),
           ),
         ],

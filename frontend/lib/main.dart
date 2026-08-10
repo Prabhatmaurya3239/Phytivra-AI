@@ -8,9 +8,15 @@ import 'screens/ai_recommendation_screen.dart';
 import 'screens/language_selection_screen.dart';
 import 'screens/settings_screen.dart';
 import 'core/app_theme.dart';
+import 'package:provider/provider.dart';
+import 'providers/app_state_provider.dart';
 
 void main() {
-  runApp(const CropDiseaseApp());
+  runApp(// Wrapping the app in Provider to satisfy Section 6 architecture
+    ChangeNotifierProvider(
+      create: (context) => AppStateProvider(),
+      child: const CropDiseaseApp(),
+    ),);
 }
 
 class CropDiseaseApp extends StatelessWidget {
