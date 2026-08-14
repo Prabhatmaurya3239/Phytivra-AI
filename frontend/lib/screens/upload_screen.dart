@@ -1,66 +1,103 @@
 import 'package:flutter/material.dart';
 import '../widgets/primary_button.dart';
+import '../widgets/secondary_button.dart'; // The one we built earlier!
 
-class UploadScreen extends StatelessWidget {
+class UploadScreen extends StatefulWidget {
   const UploadScreen({super.key});
+
+  @override
+  State<UploadScreen> createState() => _UploadScreenState();
+}
+
+class _UploadScreenState extends State<UploadScreen> {
+  bool _hasImage = false; // Simulates state management for the UI
+
+  void _simulateImageSelect() {
+    setState(() => _hasImage = true);
+  }
+
+  void _removeImage() {
+    setState(() => _hasImage = false);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Upload Crop Image'),
-      ),
+      appBar: AppBar(title: const Text('Upload Crop Image')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Selected image preview placeholder[cite: 1]
+            // Preview Selected Image area
             Expanded(
               child: Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: Colors.grey[100],
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade400, width: 2),
+                  border: Border.all(color: Colors.green.shade200, width: 2),
                 ),
-                child: const Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.image, size: 80, color: Colors.grey),
-                    SizedBox(height: 10),
-                    Text('No image selected', style: TextStyle(color: Colors.grey)),
-                  ],
-                ),
+                child: _hasImage
+                    ? Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          const Icon(Icons.grass, size: 120, color: Colors.green), // Dummy preview
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            // Remove Image button
+                            child: IconButton(
+                              icon: const Icon(Icons.cancel, color: Colors.red, size: 30),
+                              onPressed: _removeImage,
+                            ),
+                          ),
+                        ],
+                      )
+                    : const Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.image_outlined, size: 80, color: Colors.grey),
+                          SizedBox(height: 10),
+                          Text('No image selected', style: TextStyle(color: Colors.grey)),
+                        ],
+                      ),
               ),
             ),
             const SizedBox(height: 20),
-            // Camera and Gallery buttons[cite: 1]
+            
+            // Select Image from Gallery & Capture from Camera[cite: 2]
             Row(
               children: [
                 Expanded(
-                  child: PrimaryButton(
+                  child: SecondaryButton(
                     text: 'Camera',
                     icon: Icons.camera_alt,
-                    onPressed: () {}, // No logic required today[cite: 1]
+                    onPressed: _simulateImageSelect, 
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: PrimaryButton(
+                  child: SecondaryButton(
                     text: 'Gallery',
                     icon: Icons.photo_library,
-                    onPressed: () {}, // No logic required today[cite: 1]
+                    onPressed: _simulateImageSelect,
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 20),
-            // Continue button[cite: 1]
+            
+            // Continue Button[cite: 2]
             PrimaryButton(
               text: 'Continue',
-              icon: Icons.check_circle,
-              // Routes to the Processing screen when clicked
-              onPressed: () => Navigator.pushNamed(context, '/processing'),
+              icon: Icons.arrow_forward,
+              onPressed: _hasImage 
+                  ? () => Navigator.pushNamed(context, '/processing') 
+                  : () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Please select an image first!')),
+                      );
+                    },
             ),
             const SizedBox(height: 20),
           ],

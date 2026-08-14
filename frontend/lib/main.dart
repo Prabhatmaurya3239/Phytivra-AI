@@ -1,3 +1,4 @@
+import 'package:crop_app/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart'; // Make sure this matches the file you created earlier!
 import 'screens/upload_screen.dart';
@@ -6,9 +7,16 @@ import 'screens/result_screen.dart';
 import 'screens/ai_recommendation_screen.dart';
 import 'screens/language_selection_screen.dart';
 import 'screens/settings_screen.dart';
+import 'core/app_theme.dart';
+import 'package:provider/provider.dart';
+import 'providers/app_state_provider.dart';
 
 void main() {
-  runApp(const CropDiseaseApp());
+  runApp(// Wrapping the app in Provider to satisfy Section 6 architecture
+    ChangeNotifierProvider(
+      create: (context) => AppStateProvider(),
+      child: const CropDiseaseApp(),
+    ),);
 }
 
 class CropDiseaseApp extends StatelessWidget {
@@ -19,14 +27,11 @@ class CropDiseaseApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Crop Disease Detector',
-      theme: ThemeData(
-        primarySwatch: Colors.green, // Keeping it farmer-friendly
-        scaffoldBackgroundColor: Colors.white,
-      ),
+      theme: AppTheme.lightTheme,// Using our centralised theme
       initialRoute: '/home', // Starting at home for testing purposes
       // Basic Navigation implemented for all required screens[cite: 1]
       routes: {
-        '/splash': (context) => const DummyScreen(title: '1. Splash Screen'),
+        '/splash': (context) => const SplashScreen(/*title: '1. Splash Screen'*/),
         '/language': (context) => const LanguageSelectionScreen(/*title: '2. Language Selection'*/),
         '/home': (context) => const HomeScreen(), // The screen we built in Phase 2!
         '/upload': (context) => const UploadScreen(/*title: '4. Upload Image'*/),
