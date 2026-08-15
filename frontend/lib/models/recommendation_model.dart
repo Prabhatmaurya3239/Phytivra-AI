@@ -1,6 +1,6 @@
 class RecommendationModel {
   final String recommendedTreatment;
-  final String pesticides;
+  final String pesticideName;
   final String companyName;
   final String priceRange;
   final String packingSize;
@@ -12,7 +12,7 @@ class RecommendationModel {
 
   RecommendationModel({
     required this.recommendedTreatment,
-    required this.pesticides,
+    required this.pesticideName,
     required this.companyName,
     required this.priceRange,
     required this.packingSize,
@@ -27,7 +27,7 @@ class RecommendationModel {
   factory RecommendationModel.fromJson(Map<String, dynamic> json) {
     return RecommendationModel(
       recommendedTreatment: json['recommended_treatment'] ?? '',
-      pesticides: json['pesticides'] ?? '',
+      pesticideName: json['pesticides'] ?? '',
       companyName: json['company_name'] ?? '',
       priceRange: json['price_range'] ?? '',
       packingSize: json['packing_size'] ?? '',
