@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../widgets/primary_button.dart';
-import '../widgets/secondary_button.dart'; // The one we built earlier!
+import '../widgets/secondary_button.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class UploadScreen extends StatefulWidget {
   const UploadScreen({super.key});
@@ -10,14 +13,21 @@ class UploadScreen extends StatefulWidget {
 }
 
 class _UploadScreenState extends State<UploadScreen> {
-  bool _hasImage = false; // Simulates state management for the UI
+  File? _selectedImage;
+  final ImagePicker _picker = ImagePicker();
 
-  void _simulateImageSelect() {
-    setState(() => _hasImage = true);
+  // This actually opens the hardware camera or gallery[cite: 2]
+  Future<void> _pickImage(ImageSource source) async {
+    final XFile? pickedFile = await _picker.pickImage(source: source);
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+      });
+    }
   }
 
   void _removeImage() {
-    setState(() => _hasImage = false);
+    setState(() => _selectedImage = null);
   }
 
   @override
@@ -37,15 +47,30 @@ class _UploadScreenState extends State<UploadScreen> {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.green.shade200, width: 2),
                 ),
-                child: _hasImage
+                child: _selectedImage != null
                     ? Stack(
                         alignment: Alignment.center,
                         children: [
-                          const Icon(Icons.grass, size: 120, color: Colors.green), // Dummy preview
+                          // Displays the actual photo you just took[cite: 2]
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: kIsWeb
+                                ? Image.network(
+                                  _selectedImage!.path,
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                  fit:BoxFit.cover,
+                                )
+                                :Image.file(
+                                  _selectedImage!,
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                  fit: BoxFit.cover,
+                            ),
+                          ),
                           Positioned(
                             top: 8,
                             right: 8,
-                            // Remove Image button
                             child: IconButton(
                               icon: const Icon(Icons.cancel, color: Colors.red, size: 30),
                               onPressed: _removeImage,
@@ -65,14 +90,14 @@ class _UploadScreenState extends State<UploadScreen> {
             ),
             const SizedBox(height: 20),
             
-            // Select Image from Gallery & Capture from Camera[cite: 2]
+            // Select Image Buttons[cite: 2]
             Row(
               children: [
                 Expanded(
                   child: SecondaryButton(
                     text: 'Camera',
                     icon: Icons.camera_alt,
-                    onPressed: _simulateImageSelect, 
+                    onPressed: () => _pickImage(ImageSource.camera), // Triggers Camera[cite: 2]
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -80,7 +105,7 @@ class _UploadScreenState extends State<UploadScreen> {
                   child: SecondaryButton(
                     text: 'Gallery',
                     icon: Icons.photo_library,
-                    onPressed: _simulateImageSelect,
+                    onPressed: () => _pickImage(ImageSource.gallery), // Triggers Gallery[cite: 2]
                   ),
                 ),
               ],
@@ -91,8 +116,12 @@ class _UploadScreenState extends State<UploadScreen> {
             PrimaryButton(
               text: 'Continue',
               icon: Icons.arrow_forward,
-              onPressed: _hasImage 
-                  ? () => Navigator.pushNamed(context, '/processing') 
+              //changed this line
+              /*onPressed: _selectedImage != null 
+                  ? () => Navigator.pushNamed(context, '/processing') */
+              // to this
+              onPressed: _selectedImage != null 
+                  ? () => Navigator.pushNamed(context, '/processing', arguments: _selectedImage) 
                   : () {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Please select an image first!')),

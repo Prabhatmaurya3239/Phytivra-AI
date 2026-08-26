@@ -1,34 +1,44 @@
-import 'package:crop_app/widgets/language_toggel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_state_provider.dart';
+import '../widgets/language_toggel.dart'; // Keeping your spelling!
+import '../models/recommendation_model.dart';
 
-
-class AiRecommendationScreen extends StatefulWidget {
+// Changed to a StatelessWidget since the Provider handles our state now
+class AiRecommendationScreen extends StatelessWidget {
   const AiRecommendationScreen({super.key});
 
   @override
-  State<AiRecommendationScreen> createState() => _AiRecommendationScreenState();
-}
-
-class _AiRecommendationScreenState extends State<AiRecommendationScreen> {
-  //bool _isEnglish = true; // State for the language toggle[cite: 2]
-
-  @override
   Widget build(BuildContext context) {
+    // Catch the real model if it gets passed from the previous screen...
+    final passedModel = ModalRoute.of(context)?.settings.arguments as RecommendationModel?;
+    
+    // ...otherwise, use this dummy data so the app doesn't crash while we test!
+    final rec = passedModel ?? RecommendationModel(
+      recommendedTreatment: 'Immediate application of fungicides and isolation of severely affected plants.',
+      pesticideName: 'Chlorothalonil 75% WP',
+      companyName: 'AgriCare Corp',
+      priceRange: '₹450 - ₹550',
+      packingSize: '500g',
+      dosage: '2.5 grams per liter of water',
+      sprayMethod: 'Foliar spray, covering both sides of leaves evenly.',
+      precautions: 'Wear protective gear (gloves, mask) while spraying. Do not harvest within 7 days of chemical application.',
+      organicAlternatives: 'Copper-based fungicide or Neem oil extract (5ml per liter).',
+      preventiveMeasures: '• Practice crop rotation.\n• Ensure proper spacing for air circulation.\n• Avoid overhead irrigation.',
+    );
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Recommendations'),
         actions: [
          Padding(
             padding: const EdgeInsets.only(right: 16.0),
-            // Consumer listens to AppStateProvider and rebuilds when it changes
             child: Consumer<AppStateProvider>(
               builder: (context, appState, child) {
                 return LanguageToggleWidget(
                   isEnglish: appState.isEnglish,
                   onToggle: (val) {
-                    appState.toggleLanguage(val); // Updates the global brain!
+                    appState.toggleLanguage(val); 
                   },
                 );
               },
@@ -38,77 +48,77 @@ class _AiRecommendationScreenState extends State<AiRecommendationScreen> {
       ),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
-        children: const [
-          // Disease Summary[cite: 2]
+        children: [
+          // 1. Recommended Treatment
           RecommendationSection(
-            title: 'Disease Summary',
-            icon: Icons.analytics,
-            content: 'The crop is severely affected by Early Blight. Immediate action is required to prevent spread to adjacent healthy plants.',
+            title: 'Recommended Treatment',
+            icon: Icons.healing,
+            content: rec.recommendedTreatment,
           ),
           
-          // Recommended Pesticide details[cite: 2]
+          // 2-7. The specific pesticide details[cite: 2]
           Card(
             elevation: 3,
-            color: Colors.blueGrey,
+            color: Colors.blueGrey.shade50,
             child: Padding(
-              padding: EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Recommended Pesticide', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blueGrey)),
-                  Divider(),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text('Chemical Name', style: TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text('Chlorothalonil 75% WP'),
-                  ),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text('Company Name', style: TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text('AgriCare Corp / Syngenta'), // Company Name[cite: 2]
-                  ),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text('Dosage', style: TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text('2.5 grams per liter of water'), // Dosage[cite: 2]
-                  ),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text('Spray Method', style: TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text('Foliar spray, covering both sides of leaves evenly.'), // Spray Method[cite: 2]
-                  ),
+                  const Text('Pesticide Details', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+                  const Divider(),
+                  _buildDetailRow('Chemical Name', rec.pesticideName),
+                  _buildDetailRow('Company Name', rec.companyName),
+                  _buildDetailRow('Price Range', rec.priceRange),
+                  _buildDetailRow('Packing Size', rec.packingSize),
+                  _buildDetailRow('Dosage', rec.dosage),
+                  _buildDetailRow('Spray Method', rec.sprayMethod),
                 ],
               ),
             ),
           ),
           
-          // Organic Alternative[cite: 2]
+          // 8. Organic Alternatives[cite: 2]
           RecommendationSection(
             title: 'Organic Alternative',
             icon: Icons.eco,
-            content: 'Use a Copper-based fungicide or Neem oil extract (5ml per liter). Ensure application during early morning or late evening.',
+            content: rec.organicAlternatives,
           ),
           
-          // Preventive Measures[cite: 2]
+          // 9. Preventive Measures[cite: 2]
           RecommendationSection(
             title: 'Preventive Measures',
             icon: Icons.shield,
-            content: '• Practice crop rotation.\n• Ensure proper spacing for air circulation.\n• Avoid overhead irrigation.',
+            content: rec.preventiveMeasures,
           ),
           
-          // Precautions[cite: 2]
+          // 10. Precautions[cite: 2]
           RecommendationSection(
             title: 'Precautions',
             icon: Icons.warning_amber,
-            content: 'Wear protective gear (gloves, mask) while spraying. Do not harvest within 7 days of chemical application.',
+            content: rec.precautions,
           ),
+        ],
+      ),
+    );
+  }
+
+  // A tiny custom widget to keep the pesticide details clean and aligned
+  Widget _buildDetailRow(String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(flex: 2, child: Text(title, style: const TextStyle(fontWeight: FontWeight.bold))),
+          Expanded(flex: 3, child: Text(value)),
         ],
       ),
     );
   }
 }
 
-// A local widget specifically for formatting these heavy text sections cleanly
+// Keeping your local widget exactly how you designed it
 class RecommendationSection extends StatelessWidget {
   final String title;
   final String content;
