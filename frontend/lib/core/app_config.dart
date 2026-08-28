@@ -9,7 +9,7 @@
 
 class AppConfig {
   // Base URL for all API requests
-  static const String baseUrl = 'http://127.0.0.1:8000/api/';
+  static const String baseUrl = 'http://127.0.0.1:8000/api';
 
   // Image upload endpoint (for crop leaf disease prediction)
   static const String uploadEndpoint = '/prediction/upload/';
