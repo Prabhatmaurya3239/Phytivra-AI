@@ -25,3 +25,5 @@ class RecommendationSerializer(serializers.ModelSerializer):
             'pesticide_name',
             'company_name',
         ]
+
+        

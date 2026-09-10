@@ -1,37 +1,51 @@
+from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
 from .models import Recommendation
 from .serializers import RecommendationSerializer
-
+from apps.disease.models import Disease
+from apps.pesticides.serializers import PesticideSerializer
+from apps.pesticides.models import Pesticide
 
 class DiseaseRecommendationView(APIView):
 
     def get(self, request, disease_id):
 
-        recommendations = Recommendation.objects.filter(
-            disease_id=disease_id
-        ).select_related(
-            'pesticide',
-            'disease'
+        disease = get_object_or_404(
+            Disease,
+            id=disease_id
         )
 
-        if not recommendations.exists():
-            return Response(
-                {
-                    'message': 'No recommendations found for this disease.'
-                },
-                status=status.HTTP_200_OK
-            )
+        pesticides =  (
+            disease.recommended_pesticides
+            .filter(availability=True)
+            .order_by("name")
+        )
+        
 
-        serializer = RecommendationSerializer(
-            recommendations,
+        serializer = PesticideSerializer(
+            pesticides,
             many=True,
-            context={'request': request}
+            context={"request": request}
         )
 
         return Response(
-            serializer.data,
+            {
+                "success": True,
+
+                "disease": {
+                    "id": disease.id,
+                    "name": disease.name,
+                    "crop": disease.crop.name,
+                    "severity": disease.severity
+                },
+
+                "recommendations": serializer.data,
+
+                "count": pesticides.count()
+            },
+
             status=status.HTTP_200_OK
         )

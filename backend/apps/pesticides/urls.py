@@ -19,5 +19,5 @@ urlpatterns = [
         PesticideDetailView.as_view(),
         name='pesticide-detail'
     ),
-
+    
 ]
