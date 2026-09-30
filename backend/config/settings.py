@@ -48,10 +48,6 @@ INSTALLED_APPS = [
     'apps.recommendations',
     'rest_framework',
     'corsheaders',
-    'apps.crops',
-    'apps.disease',
-    'apps.pesticides',
-    'apps.prediction',
 ]
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
@@ -60,7 +56,6 @@ REST_FRAMEWORK = {
     ]
 }
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -69,12 +64,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-CORS_ALLOW_ALL_ORIGINS = True
-REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
-    ],
-}
+
 ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [

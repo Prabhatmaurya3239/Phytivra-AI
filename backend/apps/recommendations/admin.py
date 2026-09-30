@@ -1,23 +1,6 @@
 from django.contrib import admin
+from .models import Crop, Disease, Pesticide
 
-from .models import Recommendation
-
-
-@admin.register(Recommendation)
-class RecommendationAdmin(admin.ModelAdmin):
-    list_display = (
-        'id',
-        'disease',
-        'pesticide',
-        'created_at',
-    )
-
-    list_filter = (
-        'disease',
-        'pesticide',
-    )
-
-    search_fields = (
-        'disease__name',
-        'pesticide__name',
-    )
+admin.site.register(Crop)
+admin.site.register(Disease)
+admin.site.register(Pesticide)
