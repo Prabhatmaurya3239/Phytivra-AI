@@ -21,7 +21,7 @@ class DiseaseRecommendationView(APIView):
         pesticides =  (
             disease.recommended_pesticides
             .filter(availability=True)
-            .order_by("name")
+            .order_by("product_name")
         )
         
 

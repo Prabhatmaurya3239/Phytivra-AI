@@ -21,6 +21,7 @@ class DiseaseSerializer(serializers.ModelSerializer):
             'symptoms',
             'causes',
             'description',
-            'severity',
+            'severity'
             'image',
+            
         ]

@@ -6,12 +6,12 @@ from .models import Recommendation
 class RecommendationSerializer(serializers.ModelSerializer):
 
     pesticide_name = serializers.CharField(
-        source='pesticide.name',
+        source='pesticide.product_name',
         read_only=True
     )
 
     company_name = serializers.CharField(
-        source='pesticide.company_name',
+        source='pesticide.company_manufacturer',
         read_only=True
     )
 
