@@ -69,7 +69,10 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
 
     // Initial AI greeting message
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final isEnglish = Provider.of<AppStateProvider>(context, listen: false).isEnglish;
+      final isEnglish = Provider.of<AppStateProvider>(
+        context,
+        listen: false,
+      ).isEnglish;
       _addInitialGreeting(isEnglish);
     });
   }
@@ -80,7 +83,7 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
         ChatMessage(
           isUser: false,
           text: isEnglish
-              ? "Namaste! I am your Phytivra Agri AI Voice Assistant. Speak or type your crop problem, symptom, or question."
+              ? "Namaste! I am your Phytivra Phytivra AI Voice Assistant. Speak or type your crop problem, symptom, or question."
               : "नमस्ते! मैं आपका फाइटिवरा कृषि एआई वॉइस सहायक हूँ। बोलकर या लिखकर अपनी फसल की समस्या या लक्षण बताएं।",
           spokenText: isEnglish
               ? "Hello! Speak or type your crop symptom."
@@ -179,7 +182,9 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
 
     List<String> actions = [];
     if (data['action_items'] is List) {
-      actions = (data['action_items'] as List).map((e) => e.toString()).toList();
+      actions = (data['action_items'] as List)
+          .map((e) => e.toString())
+          .toList();
     }
 
     setState(() {
@@ -203,14 +208,16 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
   void _handleLocalFallbackResponse(String text, bool isEnglish) {
     final queryLower = text.toLowerCase();
 
-    bool isBlight = queryLower.contains('yellow') ||
+    bool isBlight =
+        queryLower.contains('yellow') ||
         queryLower.contains('पील') ||
         queryLower.contains('blight') ||
         queryLower.contains('झुलसा') ||
         queryLower.contains('धब्बे') ||
         queryLower.contains('spot');
 
-    bool isMildew = queryLower.contains('powder') ||
+    bool isMildew =
+        queryLower.contains('powder') ||
         queryLower.contains('white') ||
         queryLower.contains('सफेद') ||
         queryLower.contains('mildew');
@@ -236,12 +243,12 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
           ? [
               "Prune and safely destroy lower infected leaves.",
               "Avoid wetting leaves during irrigation.",
-              "Repeat spray after 7-10 days if symptoms persist."
+              "Repeat spray after 7-10 days if symptoms persist.",
             ]
           : [
               "संक्रमित निचली पत्तियों को तोड़कर नष्ट करें।",
               "सिंचाई के समय पत्तियों पर पानी न पड़ने दें।",
-              "लक्षण जारी रहने पर 7-10 दिनों बाद छिड़काव दोहराएं।"
+              "लक्षण जारी रहने पर 7-10 दिनों बाद छिड़काव दोहराएं।",
             ];
       pests = [
         PesticideModel(
@@ -259,7 +266,7 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
           precautions: "Wear gloves and mask. 7 days withholding interval.",
           sourceType: "government",
           sourceUrl: "https://cibrc.gov.in",
-        )
+        ),
       ];
       sources = [
         SourceModel(
@@ -267,7 +274,7 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
           url: "https://cibrc.gov.in",
           sourceType: "government",
           verified: true,
-        )
+        ),
       ];
     } else if (isMildew) {
       crop = "Vegetable";
@@ -297,7 +304,7 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
           precautions: "Do not spray during intense afternoon heat (>35°C).",
           sourceType: "official",
           sourceUrl: "https://cibrc.gov.in",
-        )
+        ),
       ];
     } else {
       crop = "Crop Field";
@@ -391,13 +398,13 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
             "Yellow spots on tomato leaves",
             "Best pesticide for Early Blight",
             "White powder on leaves",
-            "Saaf dosage per liter"
+            "Saaf dosage per liter",
           ]
         : [
             "टमाटर की पत्तियों पर पीले धब्बे",
             "अर्ली ब्लाइट की असरदार दवा",
             "पत्तियों पर सफेद पाउडर",
-            "साफ दवा का सही डोज"
+            "साफ दवा का सही डोज",
           ];
 
     return Scaffold(
@@ -406,7 +413,9 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
           children: [
             const Icon(Icons.record_voice_over, color: Colors.white, size: 22),
             const SizedBox(width: 8),
-            Text(isEnglish ? "Agri AI Voice Assistant" : "कृषि एआई वॉइस सहायक"),
+            Text(
+              isEnglish ? "Phytivra AI Voice Assistant" : "कृषि एआई वॉइस सहायक",
+            ),
           ],
         ),
         actions: [
@@ -429,7 +438,11 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  const Icon(Icons.tips_and_updates, size: 16, color: AppTheme.primaryGreen),
+                  const Icon(
+                    Icons.tips_and_updates,
+                    size: 16,
+                    color: AppTheme.primaryGreen,
+                  ),
                   const SizedBox(width: 6),
                   Text(
                     isEnglish ? "Quick Voice Prompts:" : "त्वरित प्रश्न:",
@@ -444,7 +457,11 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
                     (sugg) => Padding(
                       padding: const EdgeInsets.only(right: 8.0),
                       child: ActionChip(
-                        avatar: const Icon(Icons.mic, size: 14, color: AppTheme.primaryGreen),
+                        avatar: const Icon(
+                          Icons.mic,
+                          size: 14,
+                          color: AppTheme.primaryGreen,
+                        ),
                         label: Text(sugg, style: const TextStyle(fontSize: 12)),
                         backgroundColor: Colors.white,
                         side: const BorderSide(color: Color(0xFFA5D6A7)),
@@ -500,11 +517,16 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
             const SizedBox(
               width: 18,
               height: 18,
-              child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primaryGreen),
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: AppTheme.primaryGreen,
+              ),
             ),
             const SizedBox(width: 12),
             Text(
-              isEnglish ? "Agri AI is reasoning..." : "कृषि एआई विचार कर रहा है...",
+              isEnglish
+                  ? "Phytivra AI is reasoning..."
+                  : "कृषि एआई विचार कर रहा है...",
               style: const TextStyle(fontSize: 13, color: AppTheme.textMuted),
             ),
           ],
@@ -531,7 +553,9 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
           ),
           const SizedBox(width: 12),
           Text(
-            isEnglish ? "Listening... Speak your crop symptoms now" : "सुन रहे हैं... फसल के लक्षण बोलें",
+            isEnglish
+                ? "Listening... Speak your crop symptoms now"
+                : "सुन रहे हैं... फसल के लक्षण बोलें",
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
@@ -550,7 +574,9 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
         child: Container(
           margin: const EdgeInsets.symmetric(vertical: 6),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.78),
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.78,
+          ),
           decoration: BoxDecoration(
             color: AppTheme.primaryGreen,
             borderRadius: const BorderRadius.only(
@@ -573,11 +599,19 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
               Expanded(
                 child: Text(
                   message.text,
-                  style: const TextStyle(color: Colors.white, fontSize: 14, height: 1.3),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    height: 1.3,
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
-              const Icon(Icons.record_voice_over, color: Colors.white70, size: 16),
+              const Icon(
+                Icons.record_voice_over,
+                color: Colors.white70,
+                size: 16,
+              ),
             ],
           ),
         ),
@@ -585,14 +619,17 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
     }
 
     // AI Response Message Card
-    final bool isAudioActive = _isSpeaking && _currentlyPlayingMessageText == message.text;
+    final bool isAudioActive =
+        _isSpeaking && _currentlyPlayingMessageText == message.text;
 
     return Align(
       alignment: Alignment.centerLeft,
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 6),
         padding: const EdgeInsets.all(16),
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.88),
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.88,
+        ),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: const BorderRadius.only(
@@ -601,7 +638,9 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
             bottomRight: Radius.circular(16),
           ),
           border: Border.all(
-            color: isAudioActive ? AppTheme.primaryGreen : const Color(0xFFC8E6C9),
+            color: isAudioActive
+                ? AppTheme.primaryGreen
+                : const Color(0xFFC8E6C9),
             width: isAudioActive ? 2.0 : 1.2,
           ),
           boxShadow: [
@@ -621,11 +660,15 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
                 const CircleAvatar(
                   radius: 12,
                   backgroundColor: AppTheme.lightGreen,
-                  child: Icon(Icons.smart_toy, size: 14, color: AppTheme.primaryGreen),
+                  child: Icon(
+                    Icons.smart_toy,
+                    size: 14,
+                    color: AppTheme.primaryGreen,
+                  ),
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  isEnglish ? "Phytivra Agri AI" : "फाइटिवरा कृषि एआई",
+                  isEnglish ? "Phytivra Phytivra AI" : "फाइटिवरा कृषि एआई",
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
@@ -638,18 +681,27 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
                   onTap: () => _playAudioResponse(message),
                   borderRadius: BorderRadius.circular(12),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
-                      color: isAudioActive ? AppTheme.primaryGreen : const Color(0xFFE8F5E9),
+                      color: isAudioActive
+                          ? AppTheme.primaryGreen
+                          : const Color(0xFFE8F5E9),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          isAudioActive ? Icons.volume_up : Icons.play_circle_outline,
+                          isAudioActive
+                              ? Icons.volume_up
+                              : Icons.play_circle_outline,
                           size: 16,
-                          color: isAudioActive ? Colors.white : AppTheme.primaryGreen,
+                          color: isAudioActive
+                              ? Colors.white
+                              : AppTheme.primaryGreen,
                         ),
                         const SizedBox(width: 4),
                         Text(
@@ -659,7 +711,9 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
-                            color: isAudioActive ? Colors.white : AppTheme.primaryGreen,
+                            color: isAudioActive
+                                ? Colors.white
+                                : AppTheme.primaryGreen,
                           ),
                         ),
                       ],
@@ -678,12 +732,21 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
                 children: [
                   if (message.detectedCrop != null)
                     Chip(
-                      label: Text("Crop: ${message.detectedCrop}", style: const TextStyle(fontSize: 11, color: Colors.green)),
+                      label: Text(
+                        "Crop: ${message.detectedCrop}",
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Colors.green,
+                        ),
+                      ),
                       backgroundColor: const Color(0xFFE8F5E9),
                       visualDensity: VisualDensity.compact,
                     ),
                   Chip(
-                    label: Text("Condition: ${message.detectedDisease}", style: const TextStyle(fontSize: 11, color: Colors.red)),
+                    label: Text(
+                      "Condition: ${message.detectedDisease}",
+                      style: const TextStyle(fontSize: 11, color: Colors.red),
+                    ),
                     backgroundColor: Colors.red.shade50,
                     visualDensity: VisualDensity.compact,
                   ),
@@ -695,7 +758,11 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
             // Message text
             Text(
               message.text,
-              style: const TextStyle(fontSize: 14, color: AppTheme.textDark, height: 1.35),
+              style: const TextStyle(
+                fontSize: 14,
+                color: AppTheme.textDark,
+                height: 1.35,
+              ),
             ),
 
             // Actionable Steps
@@ -713,7 +780,11 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
                   children: [
                     Text(
                       isEnglish ? "Recommended Actions:" : "सुझाए गए कदम:",
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.green),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     ...message.actionItems.map(
@@ -722,8 +793,22 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text("• ", style: TextStyle(color: AppTheme.primaryGreen, fontWeight: FontWeight.bold)),
-                            Expanded(child: Text(item, style: const TextStyle(fontSize: 12, color: AppTheme.textDark))),
+                            const Text(
+                              "• ",
+                              style: TextStyle(
+                                color: AppTheme.primaryGreen,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Expanded(
+                              child: Text(
+                                item,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppTheme.textDark,
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -737,29 +822,43 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
             if (message.pesticides.isNotEmpty) ...[
               const SizedBox(height: 12),
               Text(
-                isEnglish ? "Verified Chemical / Organic Treatment:" : "प्रमाणित कीटनाशक / उपचार:",
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textDark),
+                isEnglish
+                    ? "Verified Chemical / Organic Treatment:"
+                    : "प्रमाणित कीटनाशक / उपचार:",
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textDark,
+                ),
               ),
               const SizedBox(height: 6),
               ...message.pesticides.map(
-                (p) => PesticideCard(
-                  pesticide: p,
-                  isEnglish: isEnglish,
-                ),
+                (p) => PesticideCard(pesticide: p, isEnglish: isEnglish),
               ),
             ],
 
             // Direct Scan Leaf Shortcut Button
             const SizedBox(height: 12),
             OutlinedButton.icon(
-              icon: const Icon(Icons.camera_alt, size: 16, color: AppTheme.primaryGreen),
+              icon: const Icon(
+                Icons.camera_alt,
+                size: 16,
+                color: AppTheme.primaryGreen,
+              ),
               label: Text(
-                isEnglish ? "Scan Crop Leaf with Camera" : "कैमरे से पत्ती स्कैन करें",
-                style: const TextStyle(fontSize: 12, color: AppTheme.primaryGreen),
+                isEnglish
+                    ? "Scan Crop Leaf with Camera"
+                    : "कैमरे से पत्ती स्कैन करें",
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppTheme.primaryGreen,
+                ),
               ),
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: AppTheme.primaryGreen),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
               onPressed: () {
                 Navigator.pushNamed(context, '/upload');
@@ -801,7 +900,11 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
                       color: _isListening ? Colors.red : AppTheme.primaryGreen,
                       boxShadow: [
                         BoxShadow(
-                          color: (_isListening ? Colors.red : AppTheme.primaryGreen).withOpacity(0.4),
+                          color:
+                              (_isListening
+                                      ? Colors.red
+                                      : AppTheme.primaryGreen)
+                                  .withOpacity(0.4),
                           blurRadius: _isListening ? 12 : 6,
                           spreadRadius: _isListening ? 3 : 1,
                         ),
@@ -828,8 +931,14 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
                   hintText: isEnglish
                       ? "Speak or type crop symptoms..."
                       : "फसल के लक्षण बोलें या लिखें...",
-                  hintStyle: const TextStyle(fontSize: 13, color: AppTheme.textMuted),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  hintStyle: const TextStyle(
+                    fontSize: 13,
+                    color: AppTheme.textMuted,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(24),
                     borderSide: const BorderSide(color: Color(0xFFC8E6C9)),
