@@ -59,7 +59,7 @@ class AIRecommendationView(APIView):
     Endpoint: POST /api/ai/recommendation/
     """
 
-    def post(self, request):
+    def post(self, request, prediction_id=None):
         serializer = AIRecommendationSerializer(data=request.data)
 
         if not serializer.is_valid():
@@ -69,10 +69,26 @@ class AIRecommendationView(APIView):
                 "errors": serializer.errors
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        prediction_id = serializer.validated_data["prediction_id"]
-        answers = serializer.validated_data["answers"]
+        lookup_id = prediction_id or serializer.validated_data.get("prediction_id") or request.data.get("prediction_id")
+        if not lookup_id:
+            return Response({
+                "success": False,
+                "message": "Prediction ID is required.",
+            }, status=status.HTTP_400_BAD_REQUEST)
 
-        prediction = Prediction.get_by_prediction_id(prediction_id)
+        answers_raw = serializer.validated_data["answers"]
+        answers = {}
+        if isinstance(answers_raw, list):
+            for item in answers_raw:
+                if isinstance(item, dict):
+                    qid = item.get("question_id") or item.get("id")
+                    ans = item.get("answer")
+                    if qid:
+                        answers[str(qid)] = ans
+        elif isinstance(answers_raw, dict):
+            answers = answers_raw
+
+        prediction = Prediction.get_by_prediction_id(lookup_id)
         if not prediction:
             return Response({
                 "success": False,
@@ -107,6 +123,26 @@ class AIRecommendationView(APIView):
                 "prediction_id": prediction.prediction_id,
                 "status": PredictionStatus.COMPLETED,
                 "message": "AI diagnosis refined successfully.",
+                "diagnosis": {
+                    "crop": {
+                        "id": mapped_crop.id if mapped_crop else None,
+                        "name": mapped_crop.name if mapped_crop else prediction.crop,
+                    },
+                    "disease": {
+                        "id": mapped_disease.id,
+                        "name": mapped_disease.name,
+                    },
+                    "confidence": round(prediction.confidence, 4),
+                },
+                "recommendation": rec,
+                "pesticides": pesticides,
+                "precautions": precautions,
+                "sources": [
+                    {
+                        "source_id": "source_001",
+                        "source_type": "official"
+                    }
+                ],
                 "result": {
                     "crop": {
                         "id": mapped_crop.id if mapped_crop else None,
@@ -123,6 +159,12 @@ class AIRecommendationView(APIView):
                     "recommendation": rec,
                     "pesticides": pesticides,
                     "precautions": precautions,
+                    "sources": [
+                        {
+                            "source_id": "source_001",
+                            "source_type": "official"
+                        }
+                    ],
                 }
             }, status=status.HTTP_200_OK)
 

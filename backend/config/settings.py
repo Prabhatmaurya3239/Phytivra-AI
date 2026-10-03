@@ -31,7 +31,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', default='django-insecure-(vf6@#7ro(&qd3=9^b
 DEBUG = os.getenv('DEBUG', default='True')
 
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition

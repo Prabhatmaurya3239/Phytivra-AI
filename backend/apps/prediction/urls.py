@@ -5,6 +5,7 @@ from .views import (
     DiseasePredictionView,
     MLPredictionView,
 )
+from apps.agenticAI.views import AIRecommendationView
 
 urlpatterns = [
     # 1. Upload leaf image
@@ -33,7 +34,19 @@ urlpatterns = [
         name="prediction-detail",
     ),
 
-    # 4. Receive result from ML model (legacy Task 3)
+    # 4. Answers submission endpoint (Agentic AI reconciliation)
+    path(
+        "<str:prediction_id>/answers/",
+        AIRecommendationView.as_view(),
+        name="prediction-answers",
+    ),
+    path(
+        "predict/<str:prediction_id>/answers/",
+        AIRecommendationView.as_view(),
+        name="prediction-predict-answers",
+    ),
+
+    # 5. Receive result from ML model (legacy Task 3)
     path(
         "ml-result/",
         MLPredictionView.as_view(),

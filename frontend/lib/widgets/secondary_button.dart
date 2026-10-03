@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class SecondaryButton extends StatelessWidget {
   final String text;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final IconData? icon;
 
   const SecondaryButton({
@@ -17,9 +17,13 @@ class SecondaryButton extends StatelessWidget {
     return OutlinedButton.icon(
       onPressed: onPressed,
       icon: Icon(icon ?? Icons.add, size: 20),
-      label: Text(text, style: const TextStyle(fontSize: 16)),
+      label: Text(
+        text,
+        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      ),
       style: OutlinedButton.styleFrom(
         minimumSize: const Size(double.infinity, 50),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
