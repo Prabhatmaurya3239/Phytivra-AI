@@ -280,15 +280,117 @@ class _QuestionWidgetState extends State<QuestionWidget> {
           maxLines: 2,
           decoration: InputDecoration(
             hintText: widget.isEnglish
-                ? 'Describe what you observe...'
-                : 'जो लक्षण दिख रहे हैं लिखें...',
+                ? 'Describe what you observe or tap mic to speak...'
+                : 'लक्षण लिखें या बोलकर बताने हेतु माइक दबाएं...',
             prefixIcon: const Icon(
               Icons.edit_note,
               color: AppTheme.primaryGreen,
+            ),
+            suffixIcon: IconButton(
+              icon: const Icon(Icons.mic, color: AppTheme.primaryGreen),
+              tooltip: widget.isEnglish ? 'Voice Input' : 'बोलकर लिखें',
+              onPressed: _showVoiceDictationDialog,
             ),
           ),
           onChanged: _updateValue,
         );
     }
+  }
+
+  void _showVoiceDictationDialog() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              CircleAvatar(
+                radius: 32,
+                backgroundColor: AppTheme.lightGreen,
+                child: const Icon(Icons.mic, size: 36, color: AppTheme.primaryGreen),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                widget.isEnglish ? 'Voice Dictation' : 'बोलकर लक्षण बताएं',
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                widget.isEnglish
+                    ? 'Speak clearly or tap a common symptom observed:'
+                    : 'साफ आवाज में बोलें या नीचे दिए सामान्य लक्षण पर टैप करें:',
+                style: const TextStyle(fontSize: 13, color: AppTheme.textMuted),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: (widget.isEnglish
+                        ? [
+                            'Concentric brown rings on older leaves',
+                            'Yellow spots spreading on leaf margin',
+                            'Lower leaves drying and falling off',
+                            'Dark lesions on tomato stems'
+                          ]
+                        : [
+                            'पुरानी पत्तियों पर भूरे छल्लेदार धब्बे हैं',
+                            'पत्तियों के किनारों पर पीलापन फैल रहा है',
+                            'निचली पत्तियां सूखकर गिर रही हैं',
+                            'तनों पर गहरे काले धब्बे दिख रहे हैं'
+                          ])
+                    .map(
+                      (phrase) => ActionChip(
+                        avatar: const Icon(Icons.record_voice_over, size: 14, color: AppTheme.primaryGreen),
+                        label: Text(phrase, style: const TextStyle(fontSize: 12)),
+                        onPressed: () {
+                          _textController.text = phrase;
+                          _updateValue(phrase);
+                          Navigator.pop(ctx);
+                        },
+                      ),
+                    )
+                    .toList(),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton.icon(
+                icon: const Icon(Icons.check, color: Colors.white),
+                label: Text(
+                  widget.isEnglish ? 'Capture Spoken Input' : 'आवाज दर्ज करें',
+                  style: const TextStyle(color: Colors.white),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryGreen,
+                  minimumSize: const Size.fromHeight(46),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: () {
+                  final simulated = widget.isEnglish
+                      ? 'Dark brown circular spots with yellow borders observed on leaves.'
+                      : 'पत्तियों पर पीले घेरे वाले गहरे भूरे गोल धब्बे देखे गए हैं।';
+                  _textController.text = simulated;
+                  _updateValue(simulated);
+                  Navigator.pop(ctx);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }

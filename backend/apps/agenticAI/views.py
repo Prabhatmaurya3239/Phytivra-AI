@@ -123,6 +123,26 @@ class AIRecommendationView(APIView):
                 "prediction_id": prediction.prediction_id,
                 "status": PredictionStatus.COMPLETED,
                 "message": "AI diagnosis refined successfully.",
+                "diagnosis": {
+                    "crop": {
+                        "id": mapped_crop.id if mapped_crop else None,
+                        "name": mapped_crop.name if mapped_crop else prediction.crop,
+                    },
+                    "disease": {
+                        "id": mapped_disease.id,
+                        "name": mapped_disease.name,
+                    },
+                    "confidence": round(prediction.confidence, 4),
+                },
+                "recommendation": rec,
+                "pesticides": pesticides,
+                "precautions": precautions,
+                "sources": [
+                    {
+                        "source_id": "source_001",
+                        "source_type": "official"
+                    }
+                ],
                 "result": {
                     "crop": {
                         "id": mapped_crop.id if mapped_crop else None,
@@ -139,6 +159,12 @@ class AIRecommendationView(APIView):
                     "recommendation": rec,
                     "pesticides": pesticides,
                     "precautions": precautions,
+                    "sources": [
+                        {
+                            "source_id": "source_001",
+                            "source_type": "official"
+                        }
+                    ],
                 }
             }, status=status.HTTP_200_OK)
 

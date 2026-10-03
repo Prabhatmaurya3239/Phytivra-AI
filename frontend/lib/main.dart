@@ -9,6 +9,7 @@ import 'screens/questions_screen.dart';
 import 'screens/ai_recommendation_screen.dart';
 import 'screens/language_selection_screen.dart';
 import 'screens/settings_screen.dart';
+import 'screens/voice_chat_screen.dart';
 import 'core/app_theme.dart';
 import 'providers/app_state_provider.dart';
 
@@ -41,6 +42,7 @@ class CropDiseaseApp extends StatelessWidget {
         '/questions': (context) => const QuestionsScreen(),
         '/recommendation': (context) => const AiRecommendationScreen(),
         '/settings': (context) => const SettingsScreen(),
+        '/voice_chat': (context) => const VoiceChatScreen(),
       },
     );
   }

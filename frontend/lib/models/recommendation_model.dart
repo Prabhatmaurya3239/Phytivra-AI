@@ -86,7 +86,12 @@ class RecommendationModel {
   factory RecommendationModel.fromJson(Map<String, dynamic> json) {
     // 1. Grab pesticides list
     List<PesticideModel> parsedPesticides = [];
-    final rawPests = json['recommended_pesticides'] ?? json['pesticides'];
+    final rawPests = json['recommended_pesticides'] ??
+        json['pesticides'] ??
+        (json['recommendation'] is Map
+            ? json['recommendation']['pesticides']
+            : null) ??
+        (json['result'] is Map ? json['result']['pesticides'] : null);
     if (rawPests is List) {
       parsedPesticides = rawPests
           .whereType<Map<String, dynamic>>()
@@ -96,7 +101,11 @@ class RecommendationModel {
 
     // 2. Grab precautions list
     List<String> parsedPrecautions = [];
-    final rawPrecautions = json['precautions'];
+    final rawPrecautions = json['precautions'] ??
+        (json['recommendation'] is Map
+            ? json['recommendation']['precautions']
+            : null) ??
+        (json['result'] is Map ? json['result']['precautions'] : null);
     if (rawPrecautions is List) {
       parsedPrecautions = rawPrecautions.map((e) => e.toString()).toList();
     } else if (rawPrecautions is String && rawPrecautions.isNotEmpty) {
@@ -105,7 +114,11 @@ class RecommendationModel {
 
     // 3. Grab sources list
     List<SourceModel> parsedSources = [];
-    final rawSources = json['sources'];
+    final rawSources = json['sources'] ??
+        (json['recommendation'] is Map
+            ? json['recommendation']['sources']
+            : null) ??
+        (json['result'] is Map ? json['result']['sources'] : null);
     if (rawSources is List) {
       parsedSources = rawSources
           .whereType<Map<String, dynamic>>()

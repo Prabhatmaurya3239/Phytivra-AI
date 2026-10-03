@@ -43,7 +43,9 @@ class DiseaseResultModel {
         ? json['result']
         : json;
 
-    final cropObj = data['crop'];
+    final cropObj = data['crop'] ??
+        (data['diagnosis'] is Map ? data['diagnosis']['crop'] : null) ??
+        (json['diagnosis'] is Map ? json['diagnosis']['crop'] : null);
     final String crop = cropObj is Map
         ? (cropObj['name'] ?? '')
         : (data['crop_name'] ?? '');
@@ -51,7 +53,9 @@ class DiseaseResultModel {
         ? cropObj['scientific_name']
         : null;
 
-    final diseaseObj = data['disease'];
+    final diseaseObj = data['disease'] ??
+        (data['diagnosis'] is Map ? data['diagnosis']['disease'] : null) ??
+        (json['diagnosis'] is Map ? json['diagnosis']['disease'] : null);
     final int disId = diseaseObj is Map
         ? (diseaseObj['id'] ?? 0)
         : (data['id'] ?? 0);
@@ -71,9 +75,11 @@ class DiseaseResultModel {
         ? diseaseObj['causes']
         : data['causes'];
 
-    // Confidence can be Map {'score': 0.92, 'percentage': 92} or num 0.92
+    // Confidence can be Map {'score': 0.92, 'percentage': 92}, num 0.92, or in diagnosis
     double conf = 0.0;
-    final rawConf = data['confidence'];
+    final rawConf = data['confidence'] ??
+        (data['diagnosis'] is Map ? data['diagnosis']['confidence'] : null) ??
+        (json['diagnosis'] is Map ? json['diagnosis']['confidence'] : null);
     if (rawConf is Map) {
       conf = (rawConf['score'] as num?)?.toDouble() ?? 0.0;
     } else if (rawConf is num) {
@@ -83,7 +89,14 @@ class DiseaseResultModel {
 
     // Pesticides
     List<PesticideModel> parsedPesticides = [];
-    final rawPests = data['pesticides'];
+    final rawPests = data['pesticides'] ??
+        (data['recommendation'] is Map
+            ? data['recommendation']['pesticides']
+            : null) ??
+        json['pesticides'] ??
+        (json['recommendation'] is Map
+            ? json['recommendation']['pesticides']
+            : null);
     if (rawPests is List) {
       parsedPesticides = rawPests
           .whereType<Map<String, dynamic>>()
@@ -93,14 +106,30 @@ class DiseaseResultModel {
 
     // Precautions
     List<String> parsedPrecautions = [];
-    final rawPrecautions = data['precautions'];
+    final rawPrecautions = data['precautions'] ??
+        (data['recommendation'] is Map
+            ? data['recommendation']['precautions']
+            : null) ??
+        json['precautions'] ??
+        (json['recommendation'] is Map
+            ? json['recommendation']['precautions']
+            : null);
     if (rawPrecautions is List) {
       parsedPrecautions = rawPrecautions.map((e) => e.toString()).toList();
+    } else if (rawPrecautions is String && rawPrecautions.isNotEmpty) {
+      parsedPrecautions = [rawPrecautions];
     }
 
     // Sources
     List<SourceModel> parsedSources = [];
-    final rawSources = json['sources'] ?? data['sources'];
+    final rawSources = data['sources'] ??
+        json['sources'] ??
+        (data['recommendation'] is Map
+            ? data['recommendation']['sources']
+            : null) ??
+        (json['recommendation'] is Map
+            ? json['recommendation']['sources']
+            : null);
     if (rawSources is List) {
       parsedSources = rawSources
           .whereType<Map<String, dynamic>>()
@@ -108,9 +137,14 @@ class DiseaseResultModel {
           .toList();
     }
 
-    final recSummary = data['recommendation'] is Map
-        ? data['recommendation']['summary']?.toString()
-        : null;
+    final recSummary = (data['recommendation'] is Map
+            ? data['recommendation']['summary']?.toString()
+            : null) ??
+        (json['recommendation'] is Map
+            ? json['recommendation']['summary']?.toString()
+            : null) ??
+        data['summary']?.toString() ??
+        json['summary']?.toString();
 
     return DiseaseResultModel(
       id: disId,

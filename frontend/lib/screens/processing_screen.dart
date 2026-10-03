@@ -101,17 +101,15 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
                       icon: Icons.refresh,
                       isLoading: appState.isSubmitting,
                       onPressed: () async {
+                        final nav = Navigator.of(context);
                         final ok = await appState.retryLastAction();
                         if (mounted && ok) {
                           if (appState.workflowState ==
                               PredictionWorkflowState.needsQuestions) {
-                            Navigator.pushReplacementNamed(
-                              context,
-                              '/questions',
-                            );
+                            nav.pushReplacementNamed('/questions');
                           } else if (appState.workflowState ==
                               PredictionWorkflowState.predictionCompleted) {
-                            Navigator.pushReplacementNamed(context, '/result');
+                            nav.pushReplacementNamed('/result');
                           }
                         }
                       },

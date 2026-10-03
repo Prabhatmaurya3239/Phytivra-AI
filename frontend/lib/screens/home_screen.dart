@@ -143,7 +143,221 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
+
+                // Voice Assistant & Voice Search Card
+                Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: const BorderSide(color: Color(0xFFA5D6A7), width: 1.5),
+                  ),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [const Color(0xFFF1F8E9), Colors.green.shade50],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 26,
+                          backgroundColor: AppTheme.primaryGreen,
+                          child: const Icon(
+                            Icons.record_voice_over,
+                            color: Colors.white,
+                            size: 28,
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                isEnglish
+                                    ? "Voice Search & AI Chat"
+                                    : "आवाज से खोजें और चैट करें",
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.textDark,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                isEnglish
+                                    ? "Speak crop symptoms or ask questions to AI"
+                                    : "फसल के लक्षण बोलें या एआई से सवाल पूछें",
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppTheme.textMuted,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.primaryGreen,
+                            foregroundColor: Colors.white,
+                            minimumSize: const Size(80, 38),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 10,
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.pushNamed(context, '/voice_chat');
+                          },
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.mic, size: 16),
+                              const SizedBox(width: 4),
+                              Text(isEnglish ? "Speak" : "बोलें"),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Interactive Prototype Scenarios (Review & Verification)
+                Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: const BorderSide(color: Color(0xFF90CAF9), width: 1.5),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.play_circle_fill,
+                              color: Color(0xFF1976D2),
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              isEnglish
+                                  ? "Prototype Flow Demonstration"
+                                  : "प्रोटोटाइप प्रवाह डेमो",
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF0D47A1),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          isEnglish
+                              ? "Test required Task 3 & 4 flows in one click:"
+                              : "टास्क 3 और 4 के मुख्य प्रवाह तुरंत टेस्ट करें:",
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppTheme.textMuted,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            ActionChip(
+                              avatar: const Icon(
+                                Icons.check_circle,
+                                size: 16,
+                                color: Colors.green,
+                              ),
+                              label: Text(
+                                isEnglish
+                                    ? "1. High Confidence (92%)"
+                                    : "1. उच्च विश्वास (92%)",
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                              backgroundColor: Colors.green.shade50,
+                              onPressed: () {
+                                appState.loadPrototypeScenario('high_confidence');
+                                Navigator.pushNamed(context, '/result');
+                              },
+                            ),
+                            ActionChip(
+                              avatar: const Icon(
+                                Icons.help_outline,
+                                size: 16,
+                                color: Colors.orange,
+                              ),
+                              label: Text(
+                                isEnglish
+                                    ? "2. Low Confidence (48%)"
+                                    : "2. कम विश्वास (48%)",
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                              backgroundColor: Colors.orange.shade50,
+                              onPressed: () {
+                                appState.loadPrototypeScenario('low_confidence');
+                                Navigator.pushNamed(context, '/questions');
+                              },
+                            ),
+                            ActionChip(
+                              avatar: const Icon(
+                                Icons.shield,
+                                size: 16,
+                                color: Colors.purple,
+                              ),
+                              label: Text(
+                                isEnglish
+                                    ? "3. Safeguard (Alien Crop)"
+                                    : "3. सुरक्षा नियम (अज्ञात)",
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                              backgroundColor: Colors.purple.shade50,
+                              onPressed: () {
+                                appState.loadPrototypeScenario('unverified');
+                                Navigator.pushNamed(context, '/result');
+                              },
+                            ),
+                            ActionChip(
+                              avatar: const Icon(
+                                Icons.error_outline,
+                                size: 16,
+                                color: Colors.red,
+                              ),
+                              label: Text(
+                                isEnglish
+                                    ? "4. Error & Retry Flow"
+                                    : "4. त्रुटि और पुनः प्रयास",
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                              backgroundColor: Colors.red.shade50,
+                              onPressed: () {
+                                appState.loadPrototypeScenario('failure');
+                                Navigator.pushNamed(context, '/processing');
+                              },
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
 
                 // Farmer Photo Quality Tips
                 Card(
