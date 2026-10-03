@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 from dotenv import load_dotenv
 import os
+from decouple import config
 
 # Load environment variables from .env file
 load_dotenv()
@@ -52,6 +53,8 @@ INSTALLED_APPS = [
     'apps.disease',
     'apps.pesticides',
     'apps.prediction',
+    'apps.agenticAI',
+    'apps.core',
 ]
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
@@ -74,6 +77,10 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
     ],
+    "DEFAULT_RENDERER_CLASSES": [
+        "rest_framework.renderers.JSONRenderer",
+    ],
+    "EXCEPTION_HANDLER": "apps.core.exceptions.custom_exception_handler",
 }
 ROOT_URLCONF = 'config.urls'
 
@@ -145,3 +152,13 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# ML Prediction Configuration
+
+ML_CONFIDENCE_THRESHOLD = config(
+    "ML_CONFIDENCE_THRESHOLD",
+    default=0.70,
+    cast=float
+)
+
+
+APPEND_SLASH = True

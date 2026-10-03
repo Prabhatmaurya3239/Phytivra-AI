@@ -15,36 +15,47 @@ class PesticideListView(APIView):
         serializer = PesticideSerializer(
             pesticides,
             many=True,
-            context={'request': request}
+            context={"request": request}
         )
 
         return Response(
-            serializer.data,
+            {
+                "success": True,
+                "count": pesticides.count(),
+                "data": serializer.data
+            },
             status=status.HTTP_200_OK
         )
-
 
 class PesticideDetailView(APIView):
 
     def get(self, request, pk):
 
         try:
-            pesticide = Pesticide.objects.get(pk=pk)
+
+            pesticide = Pesticide.objects.get(
+                pk=pk
+            )
 
         except Pesticide.DoesNotExist:
+
             return Response(
                 {
-                    'error': 'Pesticide not found'
+                    "success": False,
+                    "message": "Pesticide not found"
                 },
                 status=status.HTTP_404_NOT_FOUND
             )
 
         serializer = PesticideSerializer(
             pesticide,
-            context={'request': request}
+            context={"request": request}
         )
 
         return Response(
-            serializer.data,
+            {
+                "success": True,
+                "data": serializer.data
+            },
             status=status.HTTP_200_OK
         )

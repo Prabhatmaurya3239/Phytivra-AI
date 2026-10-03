@@ -26,4 +26,8 @@ urlpatterns = [
         'prediction/',
         include('apps.prediction.urls')
     ),
+    path(
+        'ai/',
+        include("apps.agenticAI.urls")
+    ),
 ]
