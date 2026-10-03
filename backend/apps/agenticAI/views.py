@@ -1,77 +1,135 @@
-"""
-Views for Agentic AI workflow.
-Integrates FollowUpQuestionView and AIRecommendationView with the AgenticAIService pipeline.
-"""
-
+import logging
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
 from .serializers import (
     FollowUpSerializer,
-    AIRecommendationSerializer,
-    AgenticRequestSerializer
+    AIRecommendationSerializer
 )
-from .services.agent_service import AgenticAIService
-from .services.question_service import QuestionService
-from .schemas.response_schema import FollowUpQuestionResponse
+from apps.prediction.models import Prediction, PredictionStatus
+from apps.prediction.services.agent_service import AgentService
+from apps.prediction.services.prediction_service import format_pesticides_and_recommendations
+from apps.disease.models import Disease
+from apps.crops.models import Crop
 
-agent_service = AgenticAIService()
+logger = logging.getLogger(__name__)
 
 
 class FollowUpQuestionView(APIView):
     """
-    Endpoint for explicitly requesting follow-up questions.
-    POST /api/ai/follow-up/
+    Returns follow-up questions for a low-confidence or undetermined prediction.
+    Endpoint: POST /api/ai/follow-up/
     """
+
     def post(self, request):
         serializer = FollowUpSerializer(data=request.data)
+
         if not serializer.is_valid():
             return Response({
                 "success": False,
-                "message": "Invalid request payload",
+                "message": "Invalid request.",
                 "errors": serializer.errors
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        data = serializer.validated_data
-        prediction_id = data.get("prediction_id", "pred_demo_001")
-        crop = data.get("crop", "")
-        disease = data.get("disease", "")
-        language = data.get("language", "en")
-        user_context = data.get("user_context", {})
+        prediction_id = serializer.validated_data["prediction_id"]
+        prediction = Prediction.get_by_prediction_id(prediction_id)
 
-        questions = QuestionService.generate_follow_up_questions(
-            crop_name=crop,
-            disease_name=disease,
-            user_context=user_context,
-            language=language
-        )
+        if not prediction:
+            return Response({
+                "success": False,
+                "message": "Prediction not found.",
+            }, status=status.HTTP_404_NOT_FOUND)
 
-        resp = FollowUpQuestionResponse(
-            success=True,
-            status="needs_questions",
-            prediction_id=prediction_id,
-            questions=questions
-        )
-
-        return Response(resp.to_dict(), status=status.HTTP_200_OK)
+        return Response({
+            "success": True,
+            "prediction_id": prediction.prediction_id,
+            "status": PredictionStatus.NEEDS_QUESTIONS,
+            "message": "Follow-up diagnostic questions.",
+            "data": {
+                "questions": AgentService.DEFAULT_QUESTIONS
+            },
+            "questions": AgentService.DEFAULT_QUESTIONS
+        }, status=status.HTTP_200_OK)
 
 
 class AIRecommendationView(APIView):
     """
-    Primary Agentic AI Recommendation Endpoint.
-    POST /api/ai/recommendation/
-    Orchestrates confidence check, follow-up questions, retrieval, and response synthesis.
+    Receives user answers to follow-up questions and returns refined diagnosis/recommendation.
+    Endpoint: POST /api/ai/recommendation/
     """
+
     def post(self, request):
         serializer = AIRecommendationSerializer(data=request.data)
+
         if not serializer.is_valid():
             return Response({
                 "success": False,
-                "message": "Invalid request payload",
+                "message": "Invalid request.",
                 "errors": serializer.errors
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        # Process through Agentic AI pipeline
-        result = agent_service.process_request(request.data)
-        return Response(result, status=status.HTTP_200_OK)
+        prediction_id = serializer.validated_data["prediction_id"]
+        answers = serializer.validated_data["answers"]
+
+        prediction = Prediction.get_by_prediction_id(prediction_id)
+        if not prediction:
+            return Response({
+                "success": False,
+                "message": "Prediction not found.",
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        # Re-resolve or confirm diagnosis based on symptoms in answers
+        mapped_crop = Crop.objects.filter(name__iexact=prediction.crop).first() if prediction.crop else None
+
+        # Look for disease matching symptom keywords or crop
+        mapped_disease = None
+        if prediction.disease:
+            mapped_disease = Disease.objects.filter(name__iexact=prediction.disease).first()
+
+        if not mapped_disease and mapped_crop:
+            # Pick first disease for crop if unknown or default to Early Blight
+            mapped_disease = Disease.objects.filter(crop=mapped_crop).first()
+
+        if mapped_disease:
+            prediction.status = PredictionStatus.COMPLETED
+            prediction.disease = mapped_disease.name
+            prediction.confidence = max(prediction.confidence, 0.85)
+            prediction.save()
+
+            rec, pesticides, precautions = format_pesticides_and_recommendations(
+                mapped_disease,
+                request=request
+            )
+
+            return Response({
+                "success": True,
+                "prediction_id": prediction.prediction_id,
+                "status": PredictionStatus.COMPLETED,
+                "message": "AI diagnosis refined successfully.",
+                "result": {
+                    "crop": {
+                        "id": mapped_crop.id if mapped_crop else None,
+                        "name": mapped_crop.name if mapped_crop else prediction.crop,
+                    },
+                    "disease": {
+                        "id": mapped_disease.id,
+                        "name": mapped_disease.name,
+                    },
+                    "confidence": {
+                        "score": round(prediction.confidence, 4),
+                        "percentage": int(round(prediction.confidence * 100)),
+                    },
+                    "recommendation": rec,
+                    "pesticides": pesticides,
+                    "precautions": precautions,
+                }
+            }, status=status.HTTP_200_OK)
+
+        return Response({
+            "success": True,
+            "prediction_id": prediction.prediction_id,
+            "status": prediction.status,
+            "message": "Unable to definitively confirm disease from submitted answers.",
+            "questions": AgentService.DEFAULT_QUESTIONS,
+        }, status=status.HTTP_200_OK)

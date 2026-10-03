@@ -1,1 +1,1 @@
-# Apps package init
+# apps package

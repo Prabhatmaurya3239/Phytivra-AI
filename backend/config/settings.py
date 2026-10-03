@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 from dotenv import load_dotenv
 import os
-from decouple import config
 
 # Load environment variables from .env file
 load_dotenv()
@@ -152,13 +151,17 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# ML Prediction Configuration
+# ML & Agentic AI Configuration
+try:
+    ML_CONFIDENCE_THRESHOLD = float(os.getenv("ML_CONFIDENCE_THRESHOLD", "0.70"))
+except (ValueError, TypeError):
+    ML_CONFIDENCE_THRESHOLD = 0.70
 
-ML_CONFIDENCE_THRESHOLD = config(
-    "ML_CONFIDENCE_THRESHOLD",
-    default=0.70,
-    cast=float
-)
+ML_SERVICE_URL = os.getenv("ML_SERVICE_URL", "")
+ML_SERVICE_TIMEOUT = int(os.getenv("ML_SERVICE_TIMEOUT", "10"))
+AGENT_SERVICE_URL = os.getenv("AGENT_SERVICE_URL", "")
+AGENT_SERVICE_TIMEOUT = int(os.getenv("AGENT_SERVICE_TIMEOUT", "15"))
+USE_DUMMY_ML = os.getenv("USE_DUMMY_ML", "True").lower() in ("true", "1", "yes")
 
 
 APPEND_SLASH = True
