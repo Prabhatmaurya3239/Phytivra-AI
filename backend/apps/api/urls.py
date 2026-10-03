@@ -1,8 +1,9 @@
-from django.urls import path,include
+from django.urls import path, include
 from .views import home
 
 urlpatterns = [
     path('', home, name='home'),
+
     path(
         'crops/',
         include('apps.crops.urls')
@@ -10,6 +11,10 @@ urlpatterns = [
 
     path(
         'disease/',
+        include('apps.disease.urls')
+    ),
+    path(
+        'diseases/',
         include('apps.disease.urls')
     ),
 
@@ -22,10 +27,16 @@ urlpatterns = [
         'recommendations/',
         include('apps.recommendations.urls')
     ),
+
     path(
         'prediction/',
         include('apps.prediction.urls')
     ),
+    path(
+        'predictions/',
+        include('apps.prediction.urls')
+    ),
+
     path(
         'ai/',
         include("apps.agenticAI.urls")

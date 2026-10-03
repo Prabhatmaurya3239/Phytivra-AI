@@ -1,325 +1,252 @@
-# from rest_framework.views import APIView
-# from rest_framework.response import Response
-# from rest_framework import status
-
-# from .models import LeafImage,Prediction
-# from .serializers import LeafImageSerializer,PredictionSerializer,MLPredictionInputSerializer
-
-
-# class LeafImageUploadView(APIView):
-
-#     def post(self, request):
-
-#         serializer = LeafImageSerializer(
-#             data=request.data
-#         )
-
-#         if serializer.is_valid():
-
-#             leaf_image = serializer.save()
-
-#             image_url = request.build_absolute_uri(
-#                 leaf_image.image.url
-#             )
-
-#             return Response(
-#                 {
-#                     'message': 'Image uploaded successfully.',
-#                     'image_id': leaf_image.id,
-#                     'image_url': image_url
-#                 },
-#                 status=status.HTTP_201_CREATED
-#             )
-
-#         return Response(
-#             {
-#                 'errors': serializer.errors
-#             },
-#             status=status.HTTP_400_BAD_REQUEST
-#         )
-
-# class DiseasePredictionView(APIView):
-
-#     def post(self, request):
-
-#         serializer = PredictionRequestSerializer(
-#             data=request.data
-#         )
-
-#         if not serializer.is_valid():
-
-#             return Response({
-#                 "success": False,
-#                 "message": "Invalid prediction request",
-#                 "errors": serializer.errors
-#             }, status=status.HTTP_400_BAD_REQUEST)
-
-#         return Response({
-#             "success": True,
-#             "message": "Disease prediction endpoint is ready",
-#             "data": {
-#                 "crop": None,
-#                 "disease": None,
-#                 "confidence": 0,
-#                 "status": "pending"
-#             }
-#         })
-
-# class MLPredictionView(APIView):
-
-#     def post(self, request):
-
-#         serializer = MLPredictionInputSerializer(
-#             data=request.data
-#         )
-
-#         if not serializer.is_valid():
-
-#             return Response(
-#                 {
-#                     "success": False,
-#                     "message": "Invalid ML prediction data",
-#                     "errors": serializer.errors
-#                 },
-#                 status=status.HTTP_400_BAD_REQUEST
-#             )
-
-#         prediction = Prediction.objects.create(
-#             crop=serializer.validated_data["crop"],
-#             disease=serializer.validated_data["disease"],
-#             confidence=serializer.validated_data["confidence"],
-#             status=serializer.validated_data["status"]
-#         )
-
-#         return Response(
-#             {
-#                 "success": True,
-#                 "message": "ML prediction received successfully",
-#                 "data": {
-#                     "crop": prediction.crop,
-#                     "disease": prediction.disease,
-#                     "confidence": prediction.confidence,
-#                     "status": prediction.status
-#                 }
-#             },
-#             status=status.HTTP_201_CREATED
-#         )
-
+import logging
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .services import process_prediction
 from django.db import DatabaseError
 
-from .models import LeafImage, Prediction
+from .models import LeafImage, Prediction, PredictionStatus
 from .serializers import (
     LeafImageSerializer,
     PredictionSerializer,
     PredictionRequestSerializer,
-    MLPredictionInputSerializer
+    MLPredictionInputSerializer,
 )
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
+from .services import PredictionService, process_prediction
+from .services.prediction_service import format_pesticides_and_recommendations
+from apps.disease.models import Disease
+from apps.crops.models import Crop
+
+logger = logging.getLogger(__name__)
 
 
-class AIRecommendationView(APIView):
-
-    def post(self, request):
-
-        crop = request.data.get("crop")
-        disease = request.data.get("disease")
-        answers = request.data.get("answers", {})
-
-        # Check required parameters
-        if not crop or not disease:
-
-            return Response(
-                {
-                    "success": False,
-                    "message": "Crop and disease are required."
-                },
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # -----------------------------------
-        # CALL AGENTIC AI SERVICE HERE
-        # -----------------------------------
-
-        try:
-
-            ai_response = agentic_ai_service(
-                crop=crop,
-                disease=disease,
-                answers=answers
-            )
-
-        except Exception:
-
-            return Response(
-                {
-                    "success": False,
-                    "message": "The AI service is temporarily unavailable."
-                },
-                status=status.HTTP_503_SERVICE_UNAVAILABLE
-            )
-
-        # -----------------------------------
-        # RETURN AI RESPONSE
-        # -----------------------------------
-
-        return Response(
-            {
-                "success": True,
-                "message": "AI recommendation generated successfully.",
-                "data": ai_response
-            },
-            status=status.HTTP_200_OK
-        )
-
-# --------------------------------------------------
-# 1. IMAGE UPLOAD
-# --------------------------------------------------
+# ---------------------------------------------------------------------------
+# 1. Image Upload View
+# ---------------------------------------------------------------------------
 
 class LeafImageUploadView(APIView):
+    """
+    Upload a leaf image for disease diagnosis.
+    Endpoint: POST /api/prediction/upload/
+    """
 
     def post(self, request):
-
-        serializer = LeafImageSerializer(
-            data=request.data
-        )
+        serializer = LeafImageSerializer(data=request.data)
 
         if not serializer.is_valid():
-
             return Response(
                 {
                     "success": False,
-                    "message": "Image upload failed",
-                    "errors": serializer.errors
+                    "message": "Image upload failed.",
+                    "errors": serializer.errors,
                 },
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         try:
-
             leaf_image = serializer.save()
-
-            image_url = request.build_absolute_uri(
-                leaf_image.image.url
-            )
+            image_url = request.build_absolute_uri(leaf_image.image.url)
 
             return Response(
                 {
                     "success": True,
                     "message": "Image uploaded successfully.",
+                    "image_id": leaf_image.id,
+                    "image_url": image_url,
                     "data": {
                         "image_id": leaf_image.id,
-                        "image_url": image_url
-                    }
+                        "image_url": image_url,
+                    },
                 },
-                status=status.HTTP_201_CREATED
+                status=status.HTTP_201_CREATED,
             )
 
-        except Exception:
-
+        except Exception as exc:
+            logger.exception("Failed to save uploaded image: %s", exc)
             return Response(
                 {
                     "success": False,
-                    "message": "Unable to process the uploaded image."
+                    "message": "Unable to process the uploaded image.",
                 },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
 
-# --------------------------------------------------
-# 2. DISEASE PREDICTION REQUEST
-# --------------------------------------------------
+# ---------------------------------------------------------------------------
+# 2. Disease Prediction View (Thin Controller)
+# ---------------------------------------------------------------------------
 
 class DiseasePredictionView(APIView):
+    """
+    Main entry point for crop disease prediction.
+    Endpoints:
+      POST /api/prediction/predict/
+      GET  /api/prediction/predict/<prediction_id>/
+      GET  /api/prediction/<prediction_id>/
+    """
 
     def post(self, request):
-
-        serializer = PredictionRequestSerializer(
-            data=request.data
-        )
+        serializer = PredictionRequestSerializer(data=request.data)
 
         if not serializer.is_valid():
-
             return Response(
                 {
                     "success": False,
-                    "message": "Invalid prediction request",
-                    "errors": serializer.errors
+                    "message": "Invalid prediction request.",
+                    "errors": serializer.errors,
                 },
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
-        image_id = serializer.validated_data["image_id"]
+        validated_data = serializer.validated_data
+        leaf_image = validated_data.get("leaf_image")
 
-        try:
-            leaf_image = LeafImage.objects.get(
-                id=image_id
+        # If direct image file was provided instead of image_id, persist it first
+        if not leaf_image and validated_data.get("image"):
+            leaf_image = LeafImage.objects.create(
+                image=validated_data["image"]
             )
 
-        except LeafImage.DoesNotExist:
+        language = validated_data.get("language", "en")
+        user_note = validated_data.get("user_note", "")
 
-            return Response(
-                {
-                    "success": False,
-                    "message": "Image not found",
-                    "errors": {
-                        "image_id": "Invalid image ID"
-                    }
-                },
-                status=status.HTTP_404_NOT_FOUND
-            )
-
-        # --------------------------------------------------
-        # ML MODEL WILL BE CONNECTED HERE BY PRABHAT
-        # --------------------------------------------------
-
-        return Response(
-            {
-                "success": True,
-                "message": "Prediction request received",
-                "data": {
-                    "image_id": leaf_image.id,
-                    "crop": None,
-                    "disease": None,
-                    "confidence": 0.0,
-                    "status": "pending"
-                }
-            },
-            status=status.HTTP_200_OK
+        # Call service layer to orchestrate the prediction flow
+        response_data, http_status = PredictionService.execute_prediction(
+            leaf_image=leaf_image,
+            language=language,
+            user_note=user_note,
+            request=request,
         )
 
+        return Response(response_data, status=http_status)
 
-# --------------------------------------------------
-# 3. ML PREDICTION RESULT
-# --------------------------------------------------
+    def get(self, request, prediction_id=None):
+        """
+        Retrieves prediction results by prediction_id (e.g. pred_000001) or primary key ID.
+        """
+        lookup_id = prediction_id or request.query_params.get("prediction_id") or request.query_params.get("id")
+
+        if not lookup_id:
+            return Response(
+                {
+                    "success": False,
+                    "message": "Prediction ID is required.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        prediction = Prediction.get_by_prediction_id(lookup_id)
+        if not prediction:
+            return Response(
+                {
+                    "success": False,
+                    "message": "Prediction not found.",
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Build response according to status
+        if prediction.status == PredictionStatus.COMPLETED or prediction.status == "success":
+            mapped_disease = None
+            if prediction.disease:
+                mapped_disease = Disease.objects.filter(name__iexact=prediction.disease).first()
+
+            rec, pesticides, precautions = format_pesticides_and_recommendations(
+                mapped_disease,
+                request=request
+            )
+
+            crop_obj = Crop.objects.filter(name__iexact=prediction.crop).first() if prediction.crop else None
+
+            return Response({
+                "success": True,
+                "prediction_id": prediction.prediction_id,
+                "status": PredictionStatus.COMPLETED,
+                "result": {
+                    "crop": {
+                        "id": crop_obj.id if crop_obj else None,
+                        "name": prediction.crop,
+                    },
+                    "disease": {
+                        "id": mapped_disease.id if mapped_disease else None,
+                        "name": prediction.disease,
+                    },
+                    "confidence": {
+                        "score": round(prediction.confidence, 4),
+                        "percentage": int(round(prediction.confidence * 100)),
+                    },
+                    "recommendation": rec,
+                    "pesticides": pesticides,
+                    "precautions": precautions,
+                }
+            }, status=status.HTTP_200_OK)
+
+        elif prediction.status == PredictionStatus.NEEDS_QUESTIONS:
+            crop_obj = Crop.objects.filter(name__iexact=prediction.crop).first() if prediction.crop else None
+            return Response({
+                "success": True,
+                "prediction_id": prediction.prediction_id,
+                "status": PredictionStatus.NEEDS_QUESTIONS,
+                "ml_result": {
+                    "crop": {
+                        "id": crop_obj.id if crop_obj else None,
+                        "name": prediction.crop,
+                    },
+                    "disease": {
+                        "id": None,
+                        "name": prediction.disease,
+                    },
+                    "confidence": round(prediction.confidence, 4),
+                },
+                "questions": [
+                    {
+                        "id": "q1",
+                        "type": "text",
+                        "question": "What specific symptoms do you observe on the leaves or stems?",
+                    },
+                    {
+                        "id": "q2",
+                        "type": "single_choice",
+                        "question": "Which part of the plant is predominantly affected?",
+                        "options": ["Older leaves", "New leaves", "Fruit", "Stem", "Whole plant"],
+                    }
+                ]
+            }, status=status.HTTP_200_OK)
+
+        else:
+            return Response({
+                "success": False,
+                "prediction_id": prediction.prediction_id,
+                "status": prediction.status,
+                "message": prediction.error_message or "Prediction processing failed.",
+            }, status=status.HTTP_200_OK)
+
+
+# ---------------------------------------------------------------------------
+# 3. ML Prediction View (Legacy Task 3 Support)
+# ---------------------------------------------------------------------------
 
 class MLPredictionView(APIView):
+    """
+    Receives direct ML prediction payloads. Retained for backward compatibility.
+    Endpoint: POST /api/prediction/ml-result/
+    """
 
     def post(self, request):
-
-        serializer = MLPredictionInputSerializer(
-            data=request.data
-        )
+        serializer = MLPredictionInputSerializer(data=request.data)
 
         if not serializer.is_valid():
-
             return Response(
                 {
                     "success": False,
                     "message": "Invalid ML prediction data",
-                    "errors": serializer.errors
+                    "errors": serializer.errors,
                 },
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
+
         data = serializer.validated_data
 
         if data["status"] == "failed":
-
             return Response(
                 {
                     "success": False,
@@ -328,63 +255,54 @@ class MLPredictionView(APIView):
                         "crop": data.get("crop"),
                         "disease": None,
                         "confidence": data.get("confidence", 0),
-                        "status": "failed"
-                    }
+                        "status": "failed",
+                    },
                 },
-                status=status.HTTP_422_UNPROCESSABLE_ENTITY
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
 
-        crop = serializer.validated_data.get("crop")
-        disease = serializer.validated_data.get("disease")
-        confidence = serializer.validated_data["confidence"]
-        prediction_status = serializer.validated_data["status"]
+        crop = data.get("crop")
+        disease = data.get("disease")
+        confidence = data["confidence"]
+        prediction_status = data["status"]
 
-        # Save ML prediction
         try:
-
             prediction = Prediction.objects.create(
-                crop=data["crop"],
-                disease=data["disease"],
-                confidence=data["confidence"],
-                status=data["status"]
+                crop=crop,
+                disease=disease,
+                confidence=confidence,
+                status=prediction_status,
             )
-
-        except DatabaseError as e:
-
+        except DatabaseError:
             return Response(
                 {
                     "success": False,
-                    "message": "Unable to save prediction false",
-                    
+                    "message": "Unable to save prediction.",
                 },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-
-        # Process confidence-based workflow
         workflow = process_prediction(
             crop=crop,
             disease=disease,
             confidence=confidence,
-            status=prediction_status
+            status=prediction_status,
         )
 
         return Response(
             {
                 "success": True,
                 "message": "Prediction processed successfully",
-
                 "data": {
-                    "prediction_id": prediction.id,
+                    "prediction_id": prediction.prediction_id,
                     "crop": crop,
                     "disease": disease,
                     "confidence": confidence,
                     "status": prediction_status,
-
                     "workflow": workflow["workflow"],
                     "next_step": workflow["next_step"],
-                    "threshold": workflow["threshold"]
-                }
+                    "threshold": workflow["threshold"],
+                },
             },
-            status=status.HTTP_201_CREATED
+            status=status.HTTP_201_CREATED,
         )
