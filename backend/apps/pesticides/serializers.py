@@ -4,43 +4,70 @@ from .models import Pesticide
 
 
 class PesticideSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = Pesticide
 
         fields = [
             'id',
-            'name',
+            'pesticide_id',
+            'product_name',
+            'active_ingredients',
+            'formulation',
+            'pesticide_type',
             'company_name',
-            'description',
-            'price_range',
-            'packing_size',
+            'company_manufacturer',
+            'target_crops',
+            'target_disease_pest',
+            'purpose',
+            'application_method',
             'dosage',
-            'spray_method',
+            'dosage_rate',
+            'water_volume_information',
+            'crop_stage',
+            'safety_precautions',
             'precautions',
-            'image',
+            'packaging',
+            'price_range',
+            'price_information',
             'availability',
+            'product_image_url_reference',
+            'image',
+            'source_url',
+            'source_type',
+            'last_verified_date',
+            'notes',
+            'description',
         ]
-    def validate_name(self, value):
 
-        value = value.strip()
+    def validate_product_name(self, value):
+        value = (value or '').strip()
 
         if len(value) < 2:
             raise serializers.ValidationError(
-                "Pesticide name must contain at least 2 characters."
+                "Product name must contain at least 2 characters."
             )
 
         return value
-    def get_image(self, obj):
 
+    def validate_company_name(self, value):
+        value = (value or '').strip()
+
+        if len(value) < 2:
+            raise serializers.ValidationError(
+                "Company name must contain at least 2 characters."
+            )
+
+        return value
+
+    def get_image(self, obj):
         if not obj.image:
             return None
 
         request = self.context.get("request")
 
         if request:
-            return request.build_absolute_uri(
-                obj.image.url
-            )
+            return request.build_absolute_uri(obj.image.url)
 
         return obj.image.url
