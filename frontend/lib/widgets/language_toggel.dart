@@ -17,7 +17,9 @@ class LanguageToggleWidget extends StatelessWidget {
       children: [
         Text(
           'HI',
-          style: TextStyle(fontWeight: !isEnglish ? FontWeight.bold : FontWeight.normal),
+          style: TextStyle(
+            fontWeight: !isEnglish ? FontWeight.bold : FontWeight.normal,
+          ),
         ),
         Switch(
           value: isEnglish,
@@ -26,7 +28,9 @@ class LanguageToggleWidget extends StatelessWidget {
         ),
         Text(
           'EN',
-          style: TextStyle(fontWeight: isEnglish ? FontWeight.bold : FontWeight.normal),
+          style: TextStyle(
+            fontWeight: isEnglish ? FontWeight.bold : FontWeight.normal,
+          ),
         ),
       ],
     );

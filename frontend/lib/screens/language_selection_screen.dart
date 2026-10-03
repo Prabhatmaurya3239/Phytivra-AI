@@ -5,7 +5,8 @@ class LanguageSelectionScreen extends StatefulWidget {
   const LanguageSelectionScreen({super.key});
 
   @override
-  State<LanguageSelectionScreen> createState() => _LanguageSelectionScreenState();
+  State<LanguageSelectionScreen> createState() =>
+      _LanguageSelectionScreenState();
 }
 
 class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
@@ -31,21 +32,28 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
               const SizedBox(height: 40),
               // English and Hindi Options[cite: 2]
               Card(
-                color: selectedLanguage == 'English' ? Colors.green.shade50 : Colors.white,
+                color: selectedLanguage == 'English'
+                    ? Colors.green.shade50
+                    : Colors.white,
                 child: ListTile(
                   title: const Text('English', style: TextStyle(fontSize: 18)),
-                  trailing: selectedLanguage == 'English' 
-                      ? const Icon(Icons.check_circle, color: Colors.green) 
+                  trailing: selectedLanguage == 'English'
+                      ? const Icon(Icons.check_circle, color: Colors.green)
                       : null,
                   onTap: () => setState(() => selectedLanguage = 'English'),
                 ),
               ),
               Card(
-                color: selectedLanguage == 'Hindi' ? Colors.green.shade50 : Colors.white,
+                color: selectedLanguage == 'Hindi'
+                    ? Colors.green.shade50
+                    : Colors.white,
                 child: ListTile(
-                  title: const Text('हिंदी (Hindi)', style: TextStyle(fontSize: 18)),
-                  trailing: selectedLanguage == 'Hindi' 
-                      ? const Icon(Icons.check_circle, color: Colors.green) 
+                  title: const Text(
+                    'हिंदी (Hindi)',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                  trailing: selectedLanguage == 'Hindi'
+                      ? const Icon(Icons.check_circle, color: Colors.green)
                       : null,
                   onTap: () => setState(() => selectedLanguage = 'Hindi'),
                 ),
@@ -53,7 +61,8 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
               const Spacer(),
               PrimaryButton(
                 text: 'Continue',
-                onPressed: () => Navigator.pushReplacementNamed(context, '/home'),
+                onPressed: () =>
+                    Navigator.pushReplacementNamed(context, '/home'),
               ),
             ],
           ),
@@ -61,4 +70,4 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
       ),
     );
   }
-} 
+}

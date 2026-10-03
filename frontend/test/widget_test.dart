@@ -1,30 +1,92 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
+import 'package:provider/provider.dart';
 import 'package:crop_app/main.dart';
+import 'package:crop_app/providers/app_state_provider.dart';
+import 'package:crop_app/models/question_model.dart';
+import 'package:crop_app/models/pesticide_model.dart';
+import 'package:crop_app/models/prediction_response.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const CropDiseaseApp());
+  testWidgets('App renders Home screen correctly', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      ChangeNotifierProvider(
+        create: (context) => AppStateProvider(),
+        child: const CropDiseaseApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // Verify Title and Greeting are present
+    expect(find.text('Phytivra-AI'), findsOneWidget);
+    expect(find.text('Namaste, Kisan Mitra! 🌾'), findsOneWidget);
+    expect(find.text('Start Diagnosis'), findsOneWidget);
+  });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+  test('QuestionModel parses all dynamic types correctly', () {
+    final textQ = QuestionModel.fromJson({
+      'id': 'q1',
+      'question': 'What symptoms are you seeing?',
+      'type': 'text',
+      'required': true,
+    });
+    expect(textQ.type, 'text');
+    expect(textQ.required, true);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    final choiceQ = QuestionModel.fromJson({
+      'id': 'q2',
+      'question': 'Which part is affected?',
+      'type': 'single_choice',
+      'options': ['Leaves', 'Stem', 'Fruit'],
+      'required': true,
+    });
+    expect(choiceQ.type, 'single_choice');
+    expect(choiceQ.options.length, 3);
+  });
+
+  test('PesticideModel handles missing fields with safety fallbacks', () {
+    final pest = PesticideModel.fromJson({
+      'name': 'Sample Product',
+      'dosage': null,
+      'price_range': null,
+    });
+    expect(pest.name, 'Sample Product');
+    expect(pest.dosage, PesticideModel.fallbackUnavailable);
+    expect(pest.priceRange, PesticideModel.fallbackUnavailable);
+  });
+
+  test('PredictionResponse parses completed high confidence result', () {
+    final json = {
+      'success': true,
+      'prediction_id': 'pred_001',
+      'status': 'completed',
+      'result': {
+        'crop': {'id': 1, 'name': 'Tomato'},
+        'disease': {'id': 1, 'name': 'Early Blight', 'severity': 'Medium'},
+        'confidence': {'score': 0.92, 'percentage': 92},
+        'recommendation': {'available': true, 'summary': 'Treatment available'},
+        'pesticides': [],
+        'precautions': ['Follow label instructions'],
+      },
+    };
+    final resp = PredictionResponse.fromJson(json);
+    expect(resp.isCompleted, true);
+    expect(resp.result?.cropName, 'Tomato');
+    expect(resp.result?.diseaseName, 'Early Blight');
+    expect(resp.result?.confidence, 0.92);
+  });
+
+  test('PredictionResponse parses low confidence needs_questions flow', () {
+    final json = {
+      'success': true,
+      'prediction_id': 'pred_002',
+      'status': 'needs_questions',
+      'questions': [
+        {'id': 'q1', 'question': 'Symptom duration?', 'type': 'text'},
+      ],
+    };
+    final resp = PredictionResponse.fromJson(json);
+    expect(resp.needsQuestions, true);
+    expect(resp.questions.length, 1);
+    expect(resp.questions[0].id, 'q1');
   });
 }

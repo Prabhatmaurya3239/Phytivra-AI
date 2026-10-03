@@ -9,8 +9,9 @@ class FollowUpSerializer(serializers.Serializer):
 
 class AIRecommendationSerializer(serializers.Serializer):
     prediction_id = serializers.CharField(
-        required=True
+        required=False,
+        allow_blank=True,
     )
-    answers = serializers.DictField(
+    answers = serializers.JSONField(
         required=True
     )
